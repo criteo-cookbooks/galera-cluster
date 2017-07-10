@@ -1,7 +1,7 @@
 include_recipe "build-essential"
 
-node['mysql']['galera']['ruby']['packages'].each do |name|
-  package "#{name}" do
+node['galera-cluster']['galera']['ruby']['packages'].each do |name|
+  package name do
     action :install
   end
 end

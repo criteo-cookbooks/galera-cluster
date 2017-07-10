@@ -10,18 +10,18 @@ Galera Cluster provides synchronous multi-master replication for MySQL (replicat
 
 This cookbook enables you to install a Galera cluster. At minimum you need to change a few attributes like:
 
-* ['mysql']['root_password'] = "password"
-* ['mysql']['fqdns'] = ["fqdn1", "fqdn2", "fqdn3"]
+* ['galera-cluster']['root_password'] = "password"
+* ['galera-cluster']['fqdns'] = ["fqdn1", "fqdn2", "fqdn3"]
 
 If you want to set the init_host, you use:
-* ['mysql']['init_fqdn'] = "init_fqdn"
+* ['galera-cluster']['init_fqdn'] = "init_fqdn"
 
 Requirements
 ============
 
 Platform
 --------
-* CentOS6
+* CentOS7
 
 Usage
 =====

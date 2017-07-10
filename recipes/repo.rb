@@ -6,7 +6,7 @@
 
 # We recommand to replace it by a recipe using yum_repository resource
 # Also, use a mirror instead of the internet repo
-repository_id = "galera-#{node['mysql']['galera']['version']}"
+repository_id = "galera-#{node['galera-cluster']['galera']['version']}"
 
 execute "yum clean metadata #{repository_id}" do
   command "yum clean metadata --disablerepo=* --enablerepo=#{repository_id}"
@@ -23,8 +23,8 @@ end
 template "/etc/yum.repos.d/#{repository_id}.repo" do
   source "galera.repo.erb"
   variables ({
-               "baseurl" => node["mysql"]["galera"]["repo"]["baseurl"],
-               "gpgkey" => node["mysql"]["galera"]["repo"]["gpgkey"]
+               "baseurl" => node['galera-cluster']["galera"]["repo"]["baseurl"],
+               "gpgkey" => node['galera-cluster']["galera"]["repo"]["gpgkey"]
              })
   owner "root"
   group "root"

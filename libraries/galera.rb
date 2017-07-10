@@ -2,13 +2,19 @@ module Galera
   def self.cluster_running?(hosts, port)
     commands = hosts.map { |host| spawn("echo '' | nc -w 10 #{host} #{port}", :out => "/dev/null") }
     all_status = commands.map { |pid| Process.wait2(pid)[1].exitstatus  }
-    return all_status.min == 0
+    all_status.min.zero?
   end
 
   def self.get_global_transaction_id(node)
     # http://galeracluster.com/documentation-webpages/restartingcluster.html
-    log_file = node["mysql"]["conf"]["mysqld"]["log-error"]
-    cmd = ::Mixlib::ShellOut.new("mysqld --wsrep-recover").run_command
+    log_file = node['galera-cluster']["conf"]["mysqld"]["log-error"]
+    begin
+      cmd = ::Mixlib::ShellOut.new("mysqld --wsrep-recover").run_command
+      cmd.error!
+    rescue => e
+      Chef::Log.warn("Unable to run mysqld --wsrep-recover : #{e}")
+    end
+
     if File.exist?(log_file)
       return IO.readlines(log_file).last(100).select { |line| line =~ /WSREP: Recovered position/ }[-1].strip.split(/[\s:]/)[-2]
     else
@@ -17,7 +23,7 @@ module Galera
   end
 
   def self.get_tmp_password(node)
-    log_file = node["mysql"]["conf"]["mysqld"]["log-error"]
+    log_file = node['galera-cluster']["conf"]["mysqld"]["log-error"]
     if File.exist?(log_file)
       match_pw = File.readlines(log_file).select { |line| line =~ /temporary password/ }[-1]
       match_pw.nil? ? tmp_pw = '' : tmp_pw = match_pw.split(" ")[-1]
@@ -42,8 +48,8 @@ module Galera
   end
 
   def self.cluster_status(node)
-    hosts = node["mysql"]["fqdns"]
-    port = node["mysql"]["conf"]["mysqld"]["port"]
+    hosts = node['galera-cluster']["fqdns"]
+    port = node['galera-cluster']["conf"]["mysqld"]["port"]
     if cluster_running?(hosts, port)
       return 'running'
     elsif transactions_exist?(node)

@@ -1,20 +1,20 @@
 platform_version = node['platform_version'].to_i
 
 # This shoud be overridden by a mirror
-default['mysql']['galera']['repo']['baseurl'] = "http://releases.galeracluster.com/centos/#{platform_version}/x86_64/"
-default['mysql']['galera']['repo']['gpgkey'] = "http://releases.galeracluster.com/GPG-KEY-galeracluster.com"
+default['galera-cluster']['galera']['repo']['baseurl'] = "http://releases.galeracluster.com/centos/#{platform_version}/x86_64/"
+default['galera-cluster']['galera']['repo']['gpgkey'] = "http://releases.galeracluster.com/GPG-KEY-galeracluster.com"
 
 # Mysql default attributes
-default["mysql"]["servicename"] = "mysqld"
-default["mysql"]["root_user"] = "root"
-default["mysql"]["server_root_password"] = ""
-default["mysql"]["users"] = {}
+default['galera-cluster']["servicename"] = "mysqld"
+default['galera-cluster']["root_user"] = "root"
+default['galera-cluster']["server_root_password"] = ""
+default['galera-cluster']["users"] = {}
 # First fqdn of the list will be considered as the default init_fqdn
-default["mysql"]["init_fqdn"] = nil
-default["mysql"]["fqdns"] = nil
+default['galera-cluster']["init_fqdn"] = nil
+default['galera-cluster']["fqdns"] = nil
 
-default["mysql"]["version"] = "5.7"
-default["mysql"]["galera"]["version"] = "3"
+default['galera-cluster']["version"] = "5.7"
+default['galera-cluster']["galera"]["version"] = "3"
 
 conf = {
   #conf basic attributes
@@ -53,7 +53,6 @@ conf = {
     "bind-address" => "0.0.0.0",
     "default_storage_engine" => "innodb",
     "innodb_autoinc_lock_mode" => "2",
-    "innodb_flush_log_at_trx_commit" => "0",
     "innodb_buffer_pool_size" => "2G",
     "innodb_table_locks" => "true",
     "innodb_lock_wait_timeout" => "60",
@@ -65,7 +64,7 @@ conf = {
     "innodb_flush_log_at_trx_commit" => "48",
     "innodb_log_buffer_size"  => "8M",
     "port" => "3306",
-    "wsrep_provider" => "/usr/lib64/galera-#{node['mysql']['galera']['version']}/libgalera_smm.so",
+    "wsrep_provider" => "/usr/lib64/galera-#{node['galera-cluster']['galera']['version']}/libgalera_smm.so",
     "wsrep_provider_options" => "gcache.size=300M; gcache.page_size=300M",
     "wsrep_cluster_name" => "mysql_cluster",
     "wsrep_sst_method" => "rsync",
@@ -84,7 +83,7 @@ conf = {
 default['build-essential']['compile_time'] = true
 
 # Packages to install at compile time
-default['mysql']['galera']['ruby']['packages'] =  [
+default['galera-cluster']['galera']['ruby']['packages'] =  [
   "mysql-wsrep-devel-5.7",
   "mysql-wsrep-libs-compat-5.7",
   "mysql-wsrep-shared-5.6"
@@ -92,8 +91,8 @@ default['mysql']['galera']['ruby']['packages'] =  [
 
 # At bootstrap, we need to clean this directory recursively
 # Looks safer to fix the value
-automatic["mysql"]["conf"]["mysqld"]["datadir"] = "/var/lib/mysql"
+default['galera-cluster']["conf"]["mysqld"]["datadir"] = "/var/lib/mysql"
 
 conf.each do |k,v|
-  default["mysql"]["conf"][k] = v
+  default['galera-cluster']["conf"][k] = v
 end

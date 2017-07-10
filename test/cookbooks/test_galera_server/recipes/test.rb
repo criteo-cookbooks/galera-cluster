@@ -4,4 +4,5 @@ end
 
 node.normal["ipaddress"] = "127.0.0.1"
 node.automatic["ipaddress"] = "127.0.0.1"
-include_recipe "galera::server"
+node.automatic['galera-cluster']["fqdns"] = ["127.0.0.1"]
+include_recipe "galera-cluster::server"

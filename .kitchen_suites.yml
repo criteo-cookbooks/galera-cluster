@@ -1,0 +1,4 @@
+- name: default
+  run_list:
+    - recipe[test_galera_server::test]
+  attributes:

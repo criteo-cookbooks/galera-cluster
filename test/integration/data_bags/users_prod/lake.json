@@ -1,0 +1,11 @@
+{
+  "shell": "/bin/bash",
+  "roles": [
+    "test"
+  ],
+  "id": "lake",
+  "username": "lake",
+  "members": "",
+  "uid": 60158,
+  "comment": "Lake User"
+}

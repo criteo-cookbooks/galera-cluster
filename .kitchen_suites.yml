@@ -1,4 +1,9 @@
 - name: default
   run_list:
-    - recipe[test_galera_server::test]
+    - recipe[galera-cluster::server]
   attributes:
+    galera-cluster:
+      fqdns:
+        - '127.0.0.1'
+      init_fqdn: '127.0.0.1'
+      ipaddress: '127.0.0.1'

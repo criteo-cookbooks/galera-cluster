@@ -14,12 +14,6 @@ provisioner:
         include_sudoers_d: true
 
 platforms:
-- name: centos-6
-  transport:
-    name: speedy_ssh
-  driver_config:
-    box:     opscode-centos-6.7
-
 - name: centos-7
   transport:
     name: speedy_ssh

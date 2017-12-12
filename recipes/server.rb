@@ -20,7 +20,7 @@ directory node['galera-cluster']["conf"]["mysqld"]["datadir"] do
   recursive true
 end
 
-my_ip = node["ipaddress"]
+my_ip = node['galera-cluster']['ipaddress'] || node['ipaddress']
 init_host = (node['galera-cluster']["init_fqdn"] && Resolv.getaddresses(node['galera-cluster']["init_fqdn"]).last) || Resolv.getaddresses(node['galera-cluster']["fqdns"].first).last
 wsrep_cluster_address = "gcomm://"
 wsrep_cluster_address += node['galera-cluster']["fqdns"].map {|fqdn| Resolv.getaddresses(fqdn).last}.join(",")

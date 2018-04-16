@@ -1,8 +1,21 @@
 platform_version = node['platform_version'].to_i
 
+default['galera-cluster']['version'] = '5.7'
+default['galera-cluster']['galera']['version'] = '3'
+
 # This shoud be overridden by a mirror
-default['galera-cluster']['galera']['repo']['baseurl'] = "http://releases.galeracluster.com/centos/#{platform_version}/x86_64/"
-default['galera-cluster']['galera']['repo']['gpgkey'] = "http://releases.galeracluster.com/GPG-KEY-galeracluster.com"
+default['galera-cluster']['galera']['repositories'] = {
+  "mysql-wsrep-#{node['galera-cluster']['version']}" => {
+    'description' => 'Mysql WSREP',
+    'baseurl' => "http://releases.galeracluster.com/mysql-wsrep-#{node['galera-cluster']["version"]}/centos/#{platform_version}/x86_64/",
+    'gpgkey' => 'http://releases.galeracluster.com/GPG-KEY-galeracluster.com',
+  },
+  "galera-#{node['galera-cluster']['galera']['version']}" => {
+    'description' => 'Galera repository',
+    'baseurl' => "http://releases.galeracluster.com/galera-#{node['galera-cluster']["galera"]["version"]}/centos/#{platform_version}/x86_64/",
+    'gpgkey' => 'http://releases.galeracluster.com/GPG-KEY-galeracluster.com',
+  },
+}
 
 # Mysql default attributes
 default['galera-cluster']["servicename"] = "mysqld"
@@ -12,9 +25,6 @@ default['galera-cluster']["users"] = {}
 # First fqdn of the list will be considered as the default init_fqdn
 default['galera-cluster']["init_fqdn"] = nil
 default['galera-cluster']["fqdns"] = nil
-
-default['galera-cluster']["version"] = "5.7"
-default['galera-cluster']["galera"]["version"] = "3"
 
 conf = {
   #conf basic attributes

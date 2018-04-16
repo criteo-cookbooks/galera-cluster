@@ -1,8 +1,9 @@
-- name: default
+- name: galera-mysql-cluster
   run_list:
     - recipe[galera-cluster::server]
   attributes:
     galera-cluster:
+      server_root_password: testpassword
       fqdns:
         - '127.0.0.1'
       init_fqdn: '127.0.0.1'

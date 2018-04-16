@@ -7,7 +7,8 @@ long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 issues_url       ''
 source_url       'https://github.com/criteo-cookbooks/galera-cluster'
 version          '0.0.1'
-supports         'linux'
 supports         'centos'
+
+chef_version '>= 12.14.34'
 
 depends          'build-essential'

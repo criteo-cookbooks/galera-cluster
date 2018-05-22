@@ -16,6 +16,11 @@ This cookbook enables you to install a Galera cluster. At minimum you need to ch
 If you want to set the init_host, you use:
 * ['galera-cluster']['init_fqdn'] = "init_fqdn"
 
+Engine choice
+-------------
+This cookbook supports mysql or mariadb engine by setting `['galera-cluster']['mysql_engine']` to `mysql` or `mariadb`.
+The default is `mysql`
+
 Requirements
 ============
 

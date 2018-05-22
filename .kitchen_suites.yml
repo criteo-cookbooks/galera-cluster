@@ -1,8 +1,22 @@
 - name: galera-mysql-cluster
   run_list:
     - recipe[galera-cluster::server]
+    - recipe[galera-cluster::ruby]
   attributes:
     galera-cluster:
+      mysql_engine: mysql
+      server_root_password: testpassword
+      fqdns:
+        - '127.0.0.1'
+      init_fqdn: '127.0.0.1'
+      ipaddress: '127.0.0.1'
+- name: galera-mariadb-cluster
+  run_list:
+    - recipe[galera-cluster::server]
+    - recipe[galera-cluster::ruby]
+  attributes:
+    galera-cluster:
+      mysql_engine: mariadb
       server_root_password: testpassword
       fqdns:
         - '127.0.0.1'

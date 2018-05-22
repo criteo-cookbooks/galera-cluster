@@ -1,16 +1,24 @@
+supported_engines = ['mariadb', 'mysql']
+unless supported_engines.include?(node['galera-cluster']['mysql_engine'])
+  ::Chef::Log.error("Galera: `#{node['galera-cluster']['mysql_engine']}` is not in the supported engines #{supported_engines.join(', ')}")
+  return
+end
+
+# include_recipe 'yum-criteo'
 include_recipe "galera-cluster::repo"
 
 # Centos7 comes with mariadb-libs, which conflicts with mysql
-package "mariadb-libs" do
-  action :remove
+if node['galera-cluster']['mysql_engine'] != 'mariadb'
+  package "mariadb-libs" do
+    action :remove
+  end
 end
 
 platform_version = node['platform_version'].to_i
 
 package "nc"
 package "rsync"
-package "galera-#{node['galera-cluster']['galera']['version']}"
-package "mysql-wsrep-#{node['galera-cluster']['version']}"
+yum_package node['galera-cluster']['galera'][node['galera-cluster']['mysql_engine']]['packages']
 
 directory node['galera-cluster']["conf"]["mysqld"]["datadir"] do
   owner "mysql"
@@ -51,24 +59,54 @@ execute "recover_cluster" do
   only_if { Galera.cluster_status(node) == 'down' }
 end
 
-# Create cluster if it never existed and we're the init host
-execute "mysql_init_root_user" do
-  command lazy { "mysql -u #{node['galera-cluster']["root_user"]} -p'#{Galera.get_tmp_password(node)}' "\
-                 "--connect-expired-password -e \"SET GLOBAL validate_password_policy=LOW;"\
-                 "SET PASSWORD FOR '#{node['galera-cluster']["root_user"]}'@'localhost' = 'temporarypassword';"\
-                 "uninstall plugin validate_password;"\
-                 "SET PASSWORD FOR '#{node['galera-cluster']["root_user"]}'@'localhost' = PASSWORD('#{node['galera-cluster']["server_root_password"]}');"\
-                 "FLUSH PRIVILEGES;\""}
-  action :nothing
-  subscribes :run, "execute[init_#{cluster_name}]", :immediately
+if node['galera-cluster']['mysql_engine'] == 'mariadb'
+  execute 'change first install root password' do
+    command '/usr/bin/mysqladmin -u root password \'' + \
+      node['galera-cluster']["server_root_password"] + '\''
+    action :nothing
+    sensitive true
+    subscribes :run, "execute[init_#{cluster_name}]", :immediately
+  end
+else
+  execute "mysql_init_root_user" do
+    command lazy { "mysql -u #{node['galera-cluster']["root_user"]} -p'#{Galera.get_tmp_password(node)}' "\
+                  "--connect-expired-password -e \"SET GLOBAL validate_password_policy=LOW;"\
+                  "SET PASSWORD FOR '#{node['galera-cluster']["root_user"]}'@'localhost' = 'temporarypassword';"\
+                  "uninstall plugin validate_password;"\
+                  "SET PASSWORD FOR '#{node['galera-cluster']["root_user"]}'@'localhost' = PASSWORD('#{node['galera-cluster']["server_root_password"]}');"\
+                  "FLUSH PRIVILEGES;\""}
+    action :nothing
+    subscribes :run, "execute[init_#{cluster_name}]", :immediately
+  end
 end
 
+# Create cluster if it never existed and we're the init host
 # We need to clean the datadir because wsrep-recover can spawn a cluster now
 # We check we are the init_host to avoid race condition on init
-execute "init_#{cluster_name}" do
-  command "rm -r #{node['galera-cluster']["conf"]["mysqld"]["datadir"]}/* ; mysqld_bootstrap"
-  action :run
-  only_if { my_ip == init_host && Galera.cluster_status(node) == 'non-existent' }
+if node['galera-cluster']['mysql_engine'] == 'mariadb'
+  execute "init_#{cluster_name}_rm_datadir" do
+    command "rm -r #{node['galera-cluster']["conf"]["mysqld"]["datadir"]}/*"
+    action :run
+    only_if { my_ip == init_host && Galera.cluster_status(node) == 'non-existent' }
+  end
+
+  execute "init_#{cluster_name}_system_tables" do
+    command "mysql_install_db --user=mysql --ldata=#{node['galera-cluster']["conf"]["mysqld"]["datadir"]}"
+    action :run
+    only_if { my_ip == init_host && Galera.cluster_status(node) == 'non-existent' }
+  end
+
+  execute "init_#{cluster_name}" do
+    command "galera_new_cluster"
+    action :run
+    only_if { my_ip == init_host && Galera.cluster_status(node) == 'non-existent' }
+  end
+else
+  execute "init_#{cluster_name}" do
+    command "rm -r #{node['galera-cluster']["conf"]["mysqld"]["datadir"]}/* ; mysqld_bootstrap"
+    action :run
+    only_if { my_ip == init_host && Galera.cluster_status(node) == 'non-existent' }
+  end
 end
 
 # In any case, we try to create the users from every nodes

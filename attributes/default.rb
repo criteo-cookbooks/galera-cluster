@@ -3,8 +3,18 @@ platform_version = node['platform_version'].to_i
 default['galera-cluster']['version'] = '5.7'
 default['galera-cluster']['galera']['version'] = '3'
 
-# This shoud be overridden by a mirror
-default['galera-cluster']['galera']['repositories'] = {
+default['mariadb']['version'] = '10.1'
+default['galera-cluster']['mysql_engine'] = 'mysql'
+
+default['galera-cluster']['galera']['mariadb']['repositories'] = {
+  "mariadb-#{node['mariadb']['version']}" => {
+    'description' => 'MariaDB',
+    'baseurl' => "http://yum.mariadb.org/#{node['mariadb']['version']}/centos7-amd64",
+    'gpgkey' => 'https://yum.mariadb.org/RPM-GPG-KEY-MariaDB'
+  },
+}
+
+default['galera-cluster']['galera']['mysql']['repositories'] = {
   "mysql-wsrep-#{node['galera-cluster']['version']}" => {
     'description' => 'Mysql WSREP',
     'baseurl' => "http://releases.galeracluster.com/mysql-wsrep-#{node['galera-cluster']["version"]}/centos/#{platform_version}/x86_64/",
@@ -16,6 +26,13 @@ default['galera-cluster']['galera']['repositories'] = {
     'gpgkey' => 'http://releases.galeracluster.com/GPG-KEY-galeracluster.com',
   },
 }
+
+default['galera-cluster']['galera']['mysql']['packages'] = [
+  "galera-#{node['galera-cluster']['galera']['version']}",
+  "mysql-wsrep-#{node['galera-cluster']['version']}"
+]
+
+default['galera-cluster']['galera']['mariadb']['packages'] = ['MariaDB-server']
 
 # Mysql default attributes
 default['galera-cluster']["servicename"] = "mysqld"
@@ -74,13 +91,17 @@ conf = {
     "innodb_flush_log_at_trx_commit" => "48",
     "innodb_log_buffer_size"  => "8M",
     "port" => "3306",
-    "wsrep_provider" => "/usr/lib64/galera-#{node['galera-cluster']['galera']['version']}/libgalera_smm.so",
+    "wsrep_provider" => if node['galera-cluster']['mysql_engine'] == 'mariadb'
+                          '/usr/lib64/galera/libgalera_smm.so'
+                        else
+                          "/usr/lib64/galera-#{node['galera-cluster']['galera']['version']}/libgalera_smm.so"
+                        end,
     "wsrep_provider_options" => "gcache.size=300M; gcache.page_size=300M",
     "wsrep_cluster_name" => "mysql_cluster",
     "wsrep_sst_method" => "rsync",
     "ignore-db-dir" => "lost+found",
-    "default_password_lifetime" => "0",
     "log-error" => "/var/log/mysqld.log",
+    'wsrep_on' => 'ON'
   },
   #conf safe attributes
   "mysqld_safe" => {
@@ -92,17 +113,19 @@ conf = {
 # We want the build-essential package to be install at compile time
 default['build-essential']['compile_time'] = true
 
-# Packages to install at compile time
-default['galera-cluster']['galera']['ruby']['packages'] =  [
-  "mysql-wsrep-devel-5.7",
-  "mysql-wsrep-libs-compat-5.7",
-  "mysql-wsrep-shared-5.6"
-]
-
 # At bootstrap, we need to clean this directory recursively
 # Looks safer to fix the value
 default['galera-cluster']["conf"]["mysqld"]["datadir"] = "/var/lib/mysql"
 
 conf.each do |k,v|
   default['galera-cluster']["conf"][k] = v
+end
+
+default['galera-cluster']['galera']['ruby']['packages'] =  ['MariaDB-devel', 'MariaDB-shared']
+if node['galera-cluster']['mysql_engine'] != 'mariadb'
+  default['galera-cluster']['conf']['mysqld']['default_password_lifetime'] = 0
+  default['galera-cluster']['galera']['ruby']['packages'] =  [
+    "mysql-wsrep-devel-5.7",
+    "mysql-wsrep-libs-compat-5.7",
+  ]
 end

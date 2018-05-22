@@ -1,4 +1,4 @@
-node['galera-cluster']['galera']['repositories'].each do |name, repo|
+node['galera-cluster']['galera'][node['galera-cluster']['mysql_engine']]['repositories'].each do |name, repo|
   yum_repository name do
     description repo['description']
     baseurl repo['baseurl']

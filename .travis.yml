@@ -18,7 +18,7 @@ env:
   - secure: MM9hu5ei2xpchSe55S8o5zlekTwfeG0Q3y4CRwzAtfIpV0VD5Vey5Wv1CNn7OPgmjPn49FNWNlGZV2QCBWrsi9sjTxhScAvRfM61emASiHi9WyHlXMGk0iQ1TJ3PxMDnhJxhErLgn2M3BXxl1PQNglElNtpt0tDzdq2xlWM39pDagjDNIi6FkkG1g4NBCJskjdDLWNxlD4u2xZxsbDwpEXIfDiSCu8gvKUZ+J1DdV3xitRHgAv0Lh3ZDsSpjZAQmy8kFuHlrFNstY0GptaMCgQpCxt5PUZYHRJzR0u2dUl4+PMpJndGLOyadjb2HHcQ7mdQOPds8NxNBojoU/olehxz6lazx3oLPO05s+uxYT48vvK26QA+dITAk6DeX9t2K/y2eCz8kw34pXmHuYo2LdICvuFZRwPVV1Tm8Bg4Rn3IRtZI5ZGmkWe5Kl308vQvpKOs0LfN7WWk/WIpQ/3EMws0NjA7v8sylhBjEOvV4c1Ad+iru4X+pKE2c/qioBSTvS4MlZmrtzeenNKs88XgTeRwd0fiRfU3n7ylYjSfe+AlzwBpNC6KablqNhcbemSfTiCme9wdtm7YWM6BCu6qF11ns9w1uZJFRmxqSYaDUDIx3s+ELfy6aw40NbGxAiUMYv8HQ11f9V2tw470wk0wWFYbLb3Ai4yT6REOi6Xu8KaU=
 before_deploy:
 - openssl aes-256-cbc -K $encrypted_ff9bcc3212d3_key -iv $encrypted_ff9bcc3212d3_iv
-  -in .travis/client.pem.enc -out .travis/client.pem -d
+  -in .travis/travis-ci.pem.enc -out .travis/client.pem -d
 before_install:
 - openssl aes-256-cbc -K $encrypted_7ee7d74a9c8b_key -iv $encrypted_7ee7d74a9c8b_iv
   -in .travis/travis-ci.pem.enc -out ~/.ssh/id_rsa

@@ -6,7 +6,7 @@ description      'Installs Galera Cluster for MySQL'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 issues_url       ''
 source_url       'https://github.com/criteo-cookbooks/galera-cluster'
-version          '0.0.2'
+version          '0.0.3'
 supports         'centos'
 
 chef_version '>= 12.14.34'
